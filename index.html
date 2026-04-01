@@ -8,12 +8,28 @@
 </head>
 <body class="container mt-4">
   <h1>Project Dashboard</h1>
+
+  <!-- เมนูดาวน์โหลดไฟล์ -->
+  <h2>ดาวน์โหลดไฟล์ต้นแบบและตัวอย่าง</h2>
+  <ul>
+    <li><a href="template.csv" download>📄 Template CSV</a></li>
+    <li><a href="demo-2569.csv" download>📄 Demo ปี 2569</a></li>
+    <li><a href="demo-2570.csv" download>📄 Demo ปี 2570</a></li>
+    <li><a href="README.md" download>📘 README คู่มือการใช้งาน</a></li>
+  </ul>
+
+  <h2>ดาวน์โหลดไฟล์รวมชุด</h2>
+  <p><a href="project-dashboard.zip" download>⬇️ ดาวน์โหลดไฟล์รวมชุด (ZIP)</a></p>
+
+  <!-- ส่วนเลือกไฟล์ CSV -->
   <input type="file" id="fileInput" class="form-control mb-3">
   <select id="projectFilter" class="form-select mb-3">
     <option value="all">ทั้งหมด</option>
   </select>
   <div id="summary" class="mb-3"></div>
   <button id="exportBtn" class="btn btn-success mb-3">บันทึกไฟล์ CSV</button>
+
+  <!-- Dashboard -->
   <div id="gantt"></div>
 
 <script>
@@ -32,7 +48,6 @@ function handleFile(e) {
 
 function parseCSV(text) {
   const rows = text.trim().split("\n");
-  const headers = rows[0].split(",");
   allTasks = rows.slice(1).map(row => {
     const cols = row.split(",");
     return {
@@ -67,16 +82,18 @@ function drawGantt(tasks) {
   const svg = d3.select("#gantt").append("svg").attr("width",800).attr("height",400);
   const x = d3.scaleTime().domain([d3.min(tasks,d=>d.start), d3.max(tasks,d=>d.end)]).range([0,700]);
   const y = d3.scaleBand().domain(tasks.map(d=>d.activity)).range([0,400]).padding(0.1);
+
   svg.selectAll("rect").data(tasks).enter().append("rect")
     .attr("x",d=>x(d.start)).attr("y",d=>y(d.activity))
     .attr("width",d=>x(d.end)-x(d.start)).attr("height",y.bandwidth())
     .attr("fill",d=>d.status===100?"green":"orange")
-    .on("click",d=>{
+    .on("click",(event,d)=>{
       d.status = d.status===100?0:100;
       sendTelegramNotification(d);
       drawGantt(tasks);
       updateSummary();
     });
+
   svg.selectAll("text").data(tasks).enter().append("text")
     .attr("x",d=>x(d.start)).attr("y",d=>y(d.activity)-2)
     .text(d=>d.project);
@@ -122,4 +139,9 @@ function exportCSV() {
   link.setAttribute("href",encodedUri);
   link.setAttribute("download","updated_tasks.csv");
   document.body.appendChild(link);
-  link
+  link.click();
+  document.body.removeChild(link);
+}
+</script>
+</body>
+</html>
